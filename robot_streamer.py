@@ -71,7 +71,7 @@ class VDA5050RobotStreamer:
         return self.header_id
         
     def get_timestamp(self):
-        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        return datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         
     def publish_connection_message(self, state):
         """Publish VDA5050 connection message"""
