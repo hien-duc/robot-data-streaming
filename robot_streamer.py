@@ -11,7 +11,7 @@ import time
 import paho.mqtt.client as mqtt
 import argparse
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class VDA5050RobotStreamer:
@@ -30,6 +30,15 @@ class VDA5050RobotStreamer:
         self.theta = 0.0
         self.driving = False
         self.operating_mode = "AUTOMATIC"
+        self.charging = False
+        self.map_id = "warehouse_map_01"
+        self.position_initialized = True
+        
+        # Order state variables
+        self.order_id = ""
+        self.order_update_id = 0
+        self.last_node_id = ""
+        self.last_node_sequence_id = 0
         
         # MQTT client setup
         self.client = mqtt.Client()
@@ -40,6 +49,23 @@ class VDA5050RobotStreamer:
         # VDA5050 topic structure
         self.base_topic = f"/vda5050/{self.manufacturer}/{self.serial_number}"
         
+        # Configure last will message (CONNECTIONBROKEN state)
+        self._setup_last_will()
+        
+    def _setup_last_will(self):
+        """Configure MQTT last will message for CONNECTIONBROKEN state"""
+        topic = f"{self.base_topic}/connection"
+        # Note: header_id will be 0 for last will since it's set before connection
+        last_will_payload = {
+            "headerId": 0,
+            "timestamp": self.get_timestamp(),
+            "version": "2.0.0",
+            "manufacturer": self.manufacturer,
+            "serialNumber": self.serial_number,
+            "connectionState": "CONNECTIONBROKEN"
+        }
+        self.client.will_set(topic, json.dumps(last_will_payload), qos=1, retain=True)
+    
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"Connected to MQTT broker at {self.host}:{self.port}")
@@ -71,14 +97,16 @@ class VDA5050RobotStreamer:
         return self.header_id
         
     def get_timestamp(self):
-        return datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        """Generate ISO8601 timestamp with milliseconds (e.g., 1991-03-11T11:40:03.12Z)"""
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
         
     def publish_connection_message(self, state):
-        """Publish VDA5050 connection message"""
-        if not self.connected:
-            print("Not connected to MQTT broker. Skipping connection message publish.")
-            return
-            
+        """Publish VDA5050 connection message with retain flag
+        
+        ONLINE: Published when AGV connects to broker
+        OFFLINE: Published when AGV disconnects in orderly fashion
+        CONNECTIONBROKEN: Sent via last will if connection drops unexpectedly
+        """
         topic = f"{self.base_topic}/connection"
         payload = {
             "headerId": self.get_next_header_id(),
@@ -89,11 +117,12 @@ class VDA5050RobotStreamer:
             "connectionState": state
         }
         
-        self.client.publish(topic, json.dumps(payload))
-        print(f"Published connection message to {topic}")
+        # Connection messages must be sent with retain flag per VDA5050 spec
+        self.client.publish(topic, json.dumps(payload), qos=1, retain=True)
+        print(f"Published connection message to {topic}: {state}")
         
     def publish_state_message(self):
-        """Publish VDA5050 state message"""
+        """Publish VDA5050 state message - fully compliant with state.schema"""
         if not self.connected:
             print("Not connected to MQTT broker. Skipping state message publish.")
             return
@@ -105,25 +134,38 @@ class VDA5050RobotStreamer:
             "version": "2.0.0",
             "manufacturer": self.manufacturer,
             "serialNumber": self.serial_number,
+            "orderId": self.order_id,
+            "orderUpdateId": self.order_update_id,
+            "lastNodeId": self.last_node_id,
+            "lastNodeSequenceId": self.last_node_sequence_id,
             "driving": self.driving,
             "operatingMode": self.operating_mode,
-            "batteryState": {
-                "batteryCharge": self.battery_level
-            },
-            "position": {
+            "nodeStates": [],
+            "edgeStates": [],
+            "agvPosition": {
                 "x": self.x,
                 "y": self.y,
-                "theta": self.theta
+                "theta": self.theta,
+                "mapId": self.map_id,
+                "positionInitialized": self.position_initialized
+            },
+            "actionStates": [],
+            "batteryState": {
+                "batteryCharge": self.battery_level,
+                "charging": self.charging
             },
             "errors": [],
-            "information": []
+            "safetyState": {
+                "eStop": "NONE",
+                "fieldViolation": False
+            }
         }
         
         self.client.publish(topic, json.dumps(payload))
         print(f"Published state message to {topic}")
         
     def publish_visualization_message(self):
-        """Publish VDA5050 visualization message"""
+        """Publish VDA5050 visualization message - fully compliant with visualization.schema"""
         if not self.connected:
             print("Not connected to MQTT broker. Skipping visualization message publish.")
             return
@@ -135,11 +177,17 @@ class VDA5050RobotStreamer:
             "version": "2.0.0",
             "manufacturer": self.manufacturer,
             "serialNumber": self.serial_number,
-            "visualizationData": {
-                "path": [
-                    {"x": self.x, "y": self.y},
-                    {"x": self.x + 1, "y": self.y + 1}
-                ]
+            "agvPosition": {
+                "x": self.x,
+                "y": self.y,
+                "theta": self.theta,
+                "mapId": self.map_id,
+                "positionInitialized": self.position_initialized
+            },
+            "velocity": {
+                "vx": 0.5 if self.driving else 0.0,
+                "vy": 0.0,
+                "omega": 0.1 if self.driving else 0.0
             }
         }
         
