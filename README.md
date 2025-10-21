@@ -157,10 +157,6 @@ To manually start the broker, simply run `mosquitto` in a command prompt.
 
 For a complete step-by-step guide, please see [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) which includes detailed instructions for the entire setup process.
 
-For a comprehensive overview of the system architecture and components, see [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
-
-For a complete project summary including features, files, and usage instructions, please refer to [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md).
-
 ## Testing
 
 To test the system, you can subscribe to the MQTT topics using any MQTT client:
@@ -225,7 +221,3 @@ python process_vda5050_messages.py
 ```
 
 This script subscribes to all VDA5050 topics and demonstrates how to parse and process the different message types.
-
-## License
-
-This project is licensed under the MIT License.
