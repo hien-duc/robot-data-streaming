@@ -33,21 +33,21 @@ def main():
     # Configuration for multiple robots
     robots = [
         {
-            'host': 'test.mosquitto.org',
+            'host': 'localhost',
             'port': 1883,
             'manufacturer': 'roboticsInc',
             'serial_number': 'AGV_001',
             'frequency': 3.0
         },
         {
-            'host': 'test.mosquitto.org',
+            'host': 'localhost',
             'port': 1883,
             'manufacturer': 'KUKA',
             'serial_number': 'KR_1001',
             'frequency': 5.0
         },
         {
-            'host': 'test.mosquitto.org',
+            'host': 'localhost',
             'port': 1883,
             'manufacturer': 'Yaskawa',
             'serial_number': 'MOTOMAN_01',
