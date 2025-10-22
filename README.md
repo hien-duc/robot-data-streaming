@@ -50,8 +50,6 @@ python robot_streamer.py
 
 For detailed step-by-step instructions, see [RUNNING_THE_SYSTEM.md](RUNNING_THE_SYSTEM.md).
 
-If you're seeing connection errors to localhost:1883, see [HOW_TO_RUN.md](HOW_TO_RUN.md) for specific instructions on setting up a local MQTT broker.
-
 ### Command Line Arguments
 
 - `--host`: MQTT broker host (default: localhost)
@@ -154,12 +152,6 @@ For testing purposes, you can also run Mosquitto as a Windows service:
 4. Run `mosquitto start` to start the service
 
 To manually start the broker, simply run `mosquitto` in a command prompt.
-
-For a complete step-by-step guide, please see [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) which includes detailed instructions for the entire setup process.
-
-For a comprehensive overview of the system architecture and components, see [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
-
-For a complete project summary including features, files, and usage instructions, please refer to [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md).
 
 ## Testing
 
