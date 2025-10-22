@@ -2,6 +2,12 @@
 
 This project simulates an Autonomous Mobile Robot (AMR) or Automated Guided Vehicle (AGV) that streams operational data using the MQTT protocol in compliance with the VDA5050 standard.
 
+**The project provides two modes of operation:**
+1. **CLI Mode**: Standalone scripts for testing and monitoring
+2. **Web Service Mode**: FastAPI application with REST API and Server-Sent Events (SSE) for real-time streaming
+
+For detailed architecture information, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Features
 
 - Publishes VDA5050-compliant JSON messages to an MQTT broker
@@ -13,6 +19,15 @@ This project simulates an Autonomous Mobile Robot (AMR) or Automated Guided Vehi
 - Adjustable publish frequency
 - Support for multiple robots with different identifiers
 - Realistic robot simulation (position, battery level, etc.)
+- **Web Service Features:**
+  - REST API for querying robot states
+  - Server-Sent Events (SSE) for real-time updates
+  - MQTT bridge for automatic state management
+  - Multi-robot state aggregation
+
+## Quick Start
+
+**New to this project?** Check out the [QUICK_START.md](QUICK_START.md) guide for step-by-step examples of both CLI and Web Service modes.
 
 ## Prerequisites
 
@@ -81,6 +96,52 @@ python multi_robot_demo.py
 ```
 
 This will start three robots with different identifiers and publish frequencies.
+
+## Web Service Mode
+
+The project includes a FastAPI-based web service that provides REST APIs and real-time SSE streaming for robot data.
+
+### Starting the Web Service
+
+1. Ensure the MQTT broker is running:
+   ```bash
+   mosquitto
+   ```
+
+2. Start the FastAPI application:
+   ```bash
+   uvicorn app.api:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+3. Start robot streamers (use the CLI tool):
+   ```bash
+   python multi_robot_demo.py
+   ```
+
+### API Endpoints
+
+- **GET `/health`** - Health check endpoint
+- **GET `/robots`** - Get snapshot of all robot states
+- **GET `/stream`** - SSE stream for all robot updates
+- **GET `/stream/{manufacturer}/{serial}`** - SSE stream for specific robot
+- **POST `/command/{manufacturer}/{serial}`** - Send command to specific robot
+
+### Testing the Web Service
+
+Open your browser or use curl to test the endpoints:
+
+```bash
+# Get all robot states
+curl http://localhost:8000/robots
+
+# Stream all robot updates (SSE)
+curl http://localhost:8000/stream
+
+# Stream specific robot updates
+curl http://localhost:8000/stream/roboticsInc/AGV_001
+```
+
+For more details on the web service architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## VDA5050 Message Format
 
