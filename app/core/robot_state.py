@@ -1,8 +1,11 @@
 from typing import Dict, Any, List
 import asyncio
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class RobotStateModel(BaseModel):
+    """Model for storing robot state data."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     manufacturer: str
     serial_number: str
     last_message_type: str = ""
@@ -54,7 +57,7 @@ class RobotState:
 
     async def get_snapshot(self) -> Dict[str, Any]:
         async with self._lock:
-            return {k: v.dict() for k, v in self._states.items()}
+            return {k: v.model_dump() for k, v in self._states.items()}
 
     async def subscribe(self, max_queue=100) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(maxsize=max_queue)

@@ -1,18 +1,9 @@
-#!/usr/bin/env python3
-"""
-VDA5050 Robot Data Streaming via MQTT
-
-This script simulates an Autonomous Mobile Robot (AMR) or Automated Guided Vehicle (AGV)
-that streams operational data using the MQTT protocol in compliance with the VDA5050 standard.
-"""
 
 import json
 import time
 import paho.mqtt.client as mqtt
 import argparse
-import uuid
-from datetime import datetime
-
+from datetime import datetime, timezone
 
 class VDA5050RobotStreamer:
     def __init__(self, host, port, manufacturer, serial_number, frequency=3):
@@ -71,7 +62,7 @@ class VDA5050RobotStreamer:
         return self.header_id
         
     def get_timestamp(self):
-        return datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         
     def publish_connection_message(self, state):
         """Publish VDA5050 connection message"""

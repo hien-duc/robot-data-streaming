@@ -25,10 +25,6 @@ For detailed architecture information, see [ARCHITECTURE.md](ARCHITECTURE.md).
   - MQTT bridge for automatic state management
   - Multi-robot state aggregation
 
-## Quick Start
-
-**New to this project?** Check out the [QUICK_START.md](QUICK_START.md) guide for step-by-step examples of both CLI and Web Service modes.
-
 ## Prerequisites
 
 - Python 3.x
